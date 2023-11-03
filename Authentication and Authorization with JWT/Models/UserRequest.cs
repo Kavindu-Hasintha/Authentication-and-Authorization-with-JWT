@@ -1,6 +1,6 @@
 ﻿namespace Authentication_and_Authorization_with_JWT.Models
 {
-    public class UserRegisterRequest
+    public class UserRequest
     {
         [Required]
         public string Username { get; set; } = string.Empty;
