@@ -2,6 +2,9 @@ global using Authentication_and_Authorization_with_JWT.Models;
 global using System.ComponentModel.DataAnnotations;
 global using Microsoft.AspNetCore.Mvc;
 global using System.Security.Cryptography;
+global using Microsoft.IdentityModel.Tokens;
+global using System.Security.Claims;
+global using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 

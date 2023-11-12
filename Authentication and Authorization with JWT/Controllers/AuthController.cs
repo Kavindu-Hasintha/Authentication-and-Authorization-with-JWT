@@ -5,6 +5,11 @@
     public class AuthController : ControllerBase
     {
         public static User user = new User();
+        private readonly IConfiguration _config;
+        public AuthController(IConfiguration config) 
+        {
+            _config = config;
+        }
 
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(UserRequest request)
@@ -31,7 +36,35 @@
                 return BadRequest("Incorrect password.");
             }
 
-            return Ok("Token!");
+            string token = CreateToken(user);
+
+            return Ok(token);
+        }
+
+        private string CreateToken(User user)
+        {
+            // Claims - Propertise of token, describe the user
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username)
+                // new Claim(ClaimTypes.Role, user.Role)
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Token:Key"]));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                // issuer: _config["Token:Issuer"],
+                // audience: _config["Token:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds
+                );
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
