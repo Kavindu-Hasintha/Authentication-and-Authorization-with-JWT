@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Authentication_and_Authorization_with_JWT.Controllers
 {
     [ApiController]
