@@ -12,7 +12,7 @@
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserRequest request)
+        public async Task<ActionResult<User>> Register(UserLoginRequest request)
         {
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -24,7 +24,7 @@
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserRequest request)
+        public async Task<ActionResult<string>> Login(UserLoginRequest request)
         {
             if (request.Username != user.Username)
             {

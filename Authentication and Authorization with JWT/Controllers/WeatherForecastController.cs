@@ -27,5 +27,12 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
             })
             .ToArray();
         }
+
+        [HttpGet("getclientline"), Authorize(Roles = "Client")]
+        public Task<ActionResult<string>> GetClientLine()
+        {
+            string line = "This is client line!";
+            return Ok(line);
+        }
     }
 }
