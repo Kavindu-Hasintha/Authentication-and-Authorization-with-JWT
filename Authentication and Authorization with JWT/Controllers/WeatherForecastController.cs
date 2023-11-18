@@ -29,7 +29,7 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
         }
 
         [HttpGet("getclientline"), Authorize(Roles = "Client")]
-        public Task<ActionResult<string>> GetClientLine()
+        public IActionResult GetClientLine()
         {
             string line = "This is client line!";
             return Ok(line);

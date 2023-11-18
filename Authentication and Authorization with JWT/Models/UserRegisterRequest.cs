@@ -7,6 +7,6 @@
         [Required, MinLength(6, ErrorMessage = "Password length mush be between 6 and 24 included."), MaxLength(24, ErrorMessage = "Password length mush be between 6 and 24 included.")]
         public string Password { get; set; } = string.Empty;
         [Required]
-        public Role Role { get; set; }
+        public Role UserRole { get; set; }
     }
 }
