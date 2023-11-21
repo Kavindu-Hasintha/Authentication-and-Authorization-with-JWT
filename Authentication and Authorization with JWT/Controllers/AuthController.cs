@@ -11,6 +11,15 @@
             _config = config;
         }
 
+        [HttpGet("getclaims"), Authorize]
+        public ActionResult<object> GetMe()
+        {
+            var username1 = User?.Identity?.Name;
+            var username2 = User.FindFirstValue(ClaimTypes.Name);
+            var role = User.FindFirstValue(ClaimTypes.Role);
+            return Ok(new { username1, username2, role });
+        }
+
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(UserRegisterRequest request)
         {
