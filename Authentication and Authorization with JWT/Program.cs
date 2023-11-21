@@ -5,6 +5,7 @@ global using System.Security.Cryptography;
 global using Microsoft.IdentityModel.Tokens;
 global using System.Security.Claims;
 global using System.IdentityModel.Tokens.Jwt;
+global using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,22 +23,27 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
         Description = "Standard Authorization header using the Bearer scheme (\"bearer {token}\")",
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
+        In = ParameterLocation.Header, 
+        Name = "Authorization", 
+        Type = SecuritySchemeType.ApiKey 
     });
     options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(
         options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
                 ValidateIssuerSigningKey = true,
+                // ValidIssuer = builder.Configuration["JWT:Issuer"],
+                // ValidAudience = builder.Configuration["JWT:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                     builder.Configuration["Token:Key"])),
-                ValidateIssuer = false,
-                ValidateAudience = false
             };
         });
 
@@ -53,7 +59,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Should be above useAuthorization
+app.UseAuthentication(); 
 
 app.UseAuthorization();
 

@@ -12,19 +12,20 @@
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserRequest request)
+        public async Task<ActionResult<User>> Register(UserRegisterRequest request)
         {
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             user.Username = request.Username;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            user.UserRole = request.UserRole;
 
             return Ok(user);
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserRequest request)
+        public async Task<ActionResult<string>> Login(UserLoginRequest request)
         {
             if (request.Username != user.Username)
             {
@@ -43,11 +44,19 @@
 
         private string CreateToken(User user)
         {
-            // Claims - Propertise of token, describe the user
+            string role = string.Empty;
+            if (user.UserRole == 0)
+            {
+                role = "Admin";
+            } else
+            {
+                role = "Client";
+            }
+
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
-                // new Claim(ClaimTypes.Role, user.Role)
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Token:Key"]));
