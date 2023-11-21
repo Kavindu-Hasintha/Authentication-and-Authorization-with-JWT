@@ -52,7 +52,7 @@
             {
                 role = "Client";
             }
-            // Claims - Propertise of token, describe the user
+
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
