@@ -6,18 +6,23 @@
     {
         public static User user = new User();
         private readonly IConfiguration _config;
-        public AuthController(IConfiguration config) 
+        private readonly IUserService _userService;
+        public AuthController(IConfiguration config, IUserService userService) 
         {
             _config = config;
+            _userService = userService;
         }
 
         [HttpGet("getclaims"), Authorize]
-        public ActionResult<object> GetMe()
+        public ActionResult<string> GetMe()
         {
-            var username1 = User?.Identity?.Name;
-            var username2 = User.FindFirstValue(ClaimTypes.Name);
-            var role = User.FindFirstValue(ClaimTypes.Role);
-            return Ok(new { username1, username2, role });
+            var username = _userService.GetMyName();
+            return Ok(username);
+
+            // var username1 = User?.Identity?.Name;
+            // var username2 = User.FindFirstValue(ClaimTypes.Name);
+            // var role = User.FindFirstValue(ClaimTypes.Role);
+            // return Ok(new { username1, username2, role });
         }
 
         [HttpPost("register")]
