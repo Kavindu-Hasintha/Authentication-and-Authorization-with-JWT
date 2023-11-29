@@ -6,10 +6,12 @@ global using Microsoft.IdentityModel.Tokens;
 global using System.Security.Claims;
 global using System.IdentityModel.Tokens.Jwt;
 global using Microsoft.AspNetCore.Authorization;
+global using Authentication_and_Authorization_with_JWT.Services.UserService;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
