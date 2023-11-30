@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace Authentication_and_Authorization_with_JWT.Services.UserService
+﻿namespace Authentication_and_Authorization_with_JWT.Services.UserService
 {
     public class UserService : IUserService
     {
