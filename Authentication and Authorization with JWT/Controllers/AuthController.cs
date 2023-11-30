@@ -53,6 +53,9 @@
 
             string token = CreateToken(user);
 
+            var refreshToken = GenerateRefreshToken();
+            SetRefreshToken(refreshToken);
+
             return Ok(token);
         }
 
@@ -106,6 +109,18 @@
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
                 return computedHash.SequenceEqual(passwordHash);
             }
+        }
+
+        private RefreshToken GetRefreshToken()
+        {
+            var refreshToken = new RefreshToken
+            {
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                Created = DateTime.Now,
+                Expires = DateTime.Now.AddDays(7)
+            };
+
+            return refreshToken;
         }
     }
 }
