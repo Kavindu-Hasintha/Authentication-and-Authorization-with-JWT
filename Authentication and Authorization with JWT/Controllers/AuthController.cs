@@ -56,7 +56,7 @@
             var refreshToken = GenerateRefreshToken();
             SetRefreshToken(refreshToken);
 
-            return Ok(token);
+            return Ok(new { token , refreshToken });
         }
 
         [HttpPost("refreshtoken")]
@@ -74,8 +74,8 @@
             }
 
             string token = CreateToken(user);
-            var newRefreshToken = GenerateRefreshToken();
-            SetRefreshToken(newRefreshToken);
+            // var newRefreshToken = GenerateRefreshToken();
+            // SetRefreshToken(newRefreshToken);
 
             return Ok(token);
         }
