@@ -1,4 +1,6 @@
-﻿namespace Authentication_and_Authorization_with_JWT.Controllers
+﻿using Authentication_and_Authorization_with_JWT.Services.RefreshTokenService;
+
+namespace Authentication_and_Authorization_with_JWT.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -7,10 +9,12 @@
         public static User user = new User();
         private readonly IConfiguration _config;
         private readonly IUserService _userService;
-        public AuthController(IConfiguration config, IUserService userService) 
+        private readonly IRefreshTokenService _refreshTokenService;
+        public AuthController(IConfiguration config, IUserService userService, IRefreshTokenService refreshTokenService) 
         {
             _config = config;
             _userService = userService;
+            _refreshTokenService = refreshTokenService;
         }
 
         [HttpGet("getclaims"), Authorize]
@@ -53,7 +57,8 @@
 
             string token = CreateToken(user);
 
-            var refreshToken = GenerateRefreshToken();
+            // var refreshToken = GenerateRefreshToken();
+            var refreshToken = _refreshTokenService.GenerateRefreshToken();
             SetRefreshToken(refreshToken);
 
             return Ok(new { token , refreshToken });
@@ -68,7 +73,7 @@
             {
                 return Unauthorized("Invalid Refresh Token");
             }
-            else if (user.TokenExpired < DateTime.Now)
+            else if (user.TokenExpired < DateTime.UtcNow)
             {
                 return Unauthorized("Token expired");
             }
@@ -132,6 +137,9 @@
             }
         }
 
+        /*
+         * This GenerateRefreshToken method is now implemented at IRefreshTokenService
+     
         private RefreshToken GenerateRefreshToken()
         {
             var refreshToken = new RefreshToken
@@ -143,6 +151,7 @@
 
             return refreshToken;
         }
+        */
 
         private void SetRefreshToken(RefreshToken newRefreshToken)
         {
