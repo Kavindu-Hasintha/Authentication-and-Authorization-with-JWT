@@ -3,5 +3,6 @@
     public interface IRefreshTokenService
     {
         RefreshToken GenerateRefreshToken();
+        void SetRefreshTokenCookie(int userId, RefreshToken newRefreshToken);
     }
 }

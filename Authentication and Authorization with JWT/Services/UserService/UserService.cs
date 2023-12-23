@@ -16,5 +16,15 @@
             }
             return result;
         }
+
+        public async Task<User> GetUserByUsernameAsync(string username)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> UpdateUserRefreshToken(int userId, string refreshToken, DateTime created, DateTime expires)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Authentication_and_Authorization_with_JWT.Services.RefreshTokenService;
+﻿using Authentication_and_Authorization_with_JWT.Services.JwtTokenService;
+using Authentication_and_Authorization_with_JWT.Services.RefreshTokenService;
 
 namespace Authentication_and_Authorization_with_JWT.Controllers
 {
@@ -9,24 +10,23 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
         public static User user = new User();
         private readonly IConfiguration _config;
         private readonly IUserService _userService;
+        private readonly IJwtTokenService _jwtTokenService;
         private readonly IRefreshTokenService _refreshTokenService;
-        public AuthController(IConfiguration config, IUserService userService, IRefreshTokenService refreshTokenService) 
+        public AuthController(IConfiguration config, IUserService userService, IRefreshTokenService refreshTokenService, IJwtTokenService jwtTokenService) 
         {
             _config = config;
             _userService = userService;
+            _jwtTokenService = jwtTokenService;
             _refreshTokenService = refreshTokenService;
         }
 
-        [HttpGet("getclaims"), Authorize]
+        [HttpGet]
+        [Route("getclaims")]
+        [Authorize]
         public ActionResult<string> GetMe()
         {
             var username = _userService.GetMyName();
             return Ok(username);
-
-            // var username1 = User?.Identity?.Name;
-            // var username2 = User.FindFirstValue(ClaimTypes.Name);
-            // var role = User.FindFirstValue(ClaimTypes.Role);
-            // return Ok(new { username1, username2, role });
         }
 
         [HttpPost("register")]
@@ -42,9 +42,18 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
             return Ok(user);
         }
 
-        [HttpPost("login")]
+        [HttpPost]
+        [Route("login")]
         public async Task<ActionResult<string>> Login(UserLoginRequest request)
         {
+            /*
+            var user = await _userService.GetUserByUsernameAsync(request.Username);
+
+            if (user == null)
+            {
+                return BadRequest("User not found.");
+            }
+            */
             if (request.Username != user.Username)
             {
                 return BadRequest("User not found.");
@@ -55,16 +64,16 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
                 return BadRequest("Incorrect password.");
             }
 
-            string token = CreateToken(user);
+            string token = _jwtTokenService.CreateToken(user);
 
-            // var refreshToken = GenerateRefreshToken();
             var refreshToken = _refreshTokenService.GenerateRefreshToken();
-            SetRefreshToken(refreshToken);
+            SetRefreshTokenCookie(refreshToken);
 
-            return Ok(new { token , refreshToken });
+            return Ok(new { Token = token, RefreshToken = refreshToken.Token });
         }
 
-        [HttpPost("refreshtoken")]
+        [HttpPost]
+        [Route("refreshtoken")]
         public async Task<ActionResult<string>> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
@@ -78,45 +87,11 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
                 return Unauthorized("Token expired");
             }
 
-            string token = CreateToken(user);
+            string token = _jwtTokenService.CreateToken(user);
             // var newRefreshToken = GenerateRefreshToken();
             // SetRefreshToken(newRefreshToken);
 
             return Ok(token);
-        }
-
-        private string CreateToken(User user)
-        {
-            string role = string.Empty;
-            if (user.UserRole == 0)
-            {
-                role = "Admin";
-            } else
-            {
-                role = "Client";
-            }
-
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, role)
-            };
-
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_config["Token:Key"]));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                // issuer: _config["Token:Issuer"],
-                // audience: _config["Token:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(2),
-                signingCredentials: creds
-                );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
         }
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -137,28 +112,14 @@ namespace Authentication_and_Authorization_with_JWT.Controllers
             }
         }
 
-        /*
-         * This GenerateRefreshToken method is now implemented at IRefreshTokenService
-     
-        private RefreshToken GenerateRefreshToken()
-        {
-            var refreshToken = new RefreshToken
-            {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Created = DateTime.Now,
-                Expires = DateTime.Now.AddMinutes(4)
-            };
-
-            return refreshToken;
-        }
-        */
-
-        private void SetRefreshToken(RefreshToken newRefreshToken)
+        private void SetRefreshTokenCookie(RefreshToken newRefreshToken)
         {
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Expires = newRefreshToken.Expires
+                Expires = newRefreshToken.Expires,
+                Secure = true, // Set to true if your application is served over HTTPS
+                SameSite = SameSiteMode.Strict
             };
 
             Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
